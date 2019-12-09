@@ -24,7 +24,6 @@ def align(s, t, scoring=None):
                 m[i][j] = newScore
                 alignMap[i][j] = (i-1, j, '-', t[j-1])
     print('Score:',m[-1][-1])
-    printM(m,[iMax,jMax])
     return buildResult(alignMap)
 
 
