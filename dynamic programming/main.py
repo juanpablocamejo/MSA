@@ -2,11 +2,16 @@ from functools import reduce
 from operator import mul, add
 from math import log2
 
+char = { '-':0, 'A':1, 'C':2, 'G':3, 'T':4 }
+scoring = [[1 if i==j else -1 for i in range(5)] for j in range(5)] # matriz de scoring
+gapPenalty = [-1]*5
+
 
 def main():
-    seqs = ['ACGT', 'AAAACGT']
+    seqs = ['ATGCATGC','GCATGAAA']
     for s in align(seqs):
         print(' '+s)
+    print('-------------')
 
 # m: matriz n-dimensional para almacenar las computaciones
 # n: Cant de dimensiones / secuencias
@@ -17,7 +22,11 @@ def align(seqs, scoreMatrix=None):
     l = mapAdd(1, map(len, seqs))
     
     alignMap = initialize(seqs, m, n, l) #Casos base
-
+    print('-------------')
+    print('Casos base')
+    print('-------------')
+    printM(m,l,True)
+    print('-------------')
     i = startIdx = [0]*n
     while True:
         if getM(m, i) is None:
@@ -36,7 +45,12 @@ def align(seqs, scoreMatrix=None):
         i = nextIndex(i, l)
         if i == startIdx:
             break
+    print('Matriz:')
+    print('-------------')
+    printM(m,l)
+    print('-------------')
     print('Score:', getM(m, [-1]*n))
+    print('-------------')
     return buildResult(alignMap, l)
 
 
@@ -44,22 +58,27 @@ def printMap(m):
     for k in m.keys():
         print(k, m[k])
 
+def writeGap(c):
+    return '-' if c=='_' else c
 
 # Arma el resultado de la alineación de acuerdo al map que contiene
 # el camino almacenado y las columnas de caracteres asociada a la decisión tomada en cada paso.
 def buildResult(alignMap, l):
     res = ['']*len(l)
     k = listToStr(mapAdd(-1, l))
+    path =[k]
     while k != '0'*len(l):
         for i, c in enumerate(alignMap[k][1]):
-            res[i] = c + res[i]
+            res[i] = writeGap(c) + res[i]
         k = alignMap[k][0]
+        path.insert(0,k)
+    print('Path:',path)
     return res
 
 # devuelve la lista de caracteres/gaps de acuerdo a la
 # opción explorada (i - j)
 def calcChoiceCol(seq, i, j):
-    return [seq[x][i[x]-1] if j[x] == 1 else '-' for x in range(len(i))]
+    return [seq[x][i[x]-1] if j[x] == 1 else '_' for x in range(len(i))]
 
 
 def initialize(seqs, m, n, l):
@@ -71,7 +90,7 @@ def initialize(seqs, m, n, l):
             idx[i] = j
             prevIdx = idx.copy()
             prevIdx[i] = j-1
-            col = ['-' if x == 0 else seqs[i][x-1] for x in idx]
+            col = ['_' if x == 0 else seqs[i][x-1] for x in idx]
             score = getM(m, prevIdx) + columnScore(col)
             setM(m, idx, score)
             alignMap[listToStr(idx)] = (listToStr(prevIdx), col)
@@ -81,15 +100,20 @@ def initialize(seqs, m, n, l):
 def columnScore(col, m=None):
     return sum([charPairScore(col[a], col[b], m) for a in range(len(col)) for b in range(a+1, len(col))])
 
+def transform(a, b):
+    return scoring[char[a]][char[b]]
 
+def gap(c):    
+    return gapPenalty[char[writeGap(c)]]
+
+#NOTA: uso '_' para diferenciar la accion de insertar un gap de la de comparar un gap que ya contengan las secuencias
 def charPairScore(a, b, m=None):
-    if m is None:  # default
-        if a == b:
-            return 1
-        else:
-            return -2 if '-' in (a, b) else -1
+    if a=='_':
+        return gap(b)
+    elif b=='_':
+        return gap(a)
     else:
-        return m[a][b]
+        return transform(a,b)
 
 # crea una matriz n-dimensional para almacenar las computaciones
 def emptyMatN(seqs, i=0):
@@ -155,12 +179,15 @@ def setM(m, idx, val):
         res = res[idx[i]]
     res[idx[-1]] = val
 
+
+cons = lambda v: lambda:v
 # imprime el contenido de la matriz n-dimensional
 # como una lista de indices sequidos de sus valores ej: [0][1]...[6] = None
-def printM(m, lengths):
+def printM(m, lengths, skipEmpty=False):
     for i in mkAllIndex(lengths):
-        print(reduce(lambda acc, c: acc +
-                     '[' + str(c) + ']', i, ''), '=', getM(m, i))
+        v = getM(m, i)
+        if not skipEmpty or v is not None:
+            print(reduce(lambda acc, c: acc + '[' + str(c) + ']', i, ''), '=', v)
 
 
 if __name__ == "__main__":

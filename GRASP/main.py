@@ -1,30 +1,46 @@
 from functools import reduce
 from operator import mul
 
-def main():
-    s, t = 'GAAC', 'CAAGAC'
-    for x in align(s, t):
-        print(x)
+char = { '-':0, 'A':1, 'C':2, 'G':3, 'T':4 }
+scoring = [[1 if i==j else -1 for i in range(5)] for j in range(5)] # matriz de scoring
+gapPenalty = [-1]*5
 
-def align(s, t, scoring=None):
-    m, iMax, jMax = initialize(s, t, scoring)
+def allPairs(seqs):
+    return [(seqs[a],seqs[b]) for a in range(len(seqs)) for b in range(a+1,len(seqs))]
+
+def gap(c):
+    return gapPenalty[char[c]]
+
+def main():
+    print(alignNW('ATGCATGC','GCATGAAA'))
+    MSA(['GAAC', 'CAAGAC', 'GTCCA'])
+    
+def profile(alignment):
+    return None
+
+def MSA(seqs):
+    rank = sorted([ alignNW(*p) for p in allPairs(seqs)], key=lambda t:t[0],reverse=True)
+    print(rank)
+
+
+def alignNW(s, t):
+    m, iMax, jMax = initialize(s, t)
     alignMap = createAlignMap(s, t)
     for i in range(1, iMax):
         for j in range(1, jMax):
-            m[i][j] = transform(s[i-1], t[j-1], scoring) + m[i-1][j-1]
+            m[i][j] = transform(s[i-1], t[j-1]) + m[i-1][j-1]
             alignMap[i][j] = (i-1, j-1, s[i-1], t[j-1])
 
-            newScore = transform(s[i-1], '-', scoring) + m[i][j-1]
+            newScore = gap(s[i-1]) + m[i][j-1]
             if newScore > m[i][j]:
                 m[i][j] = newScore
                 alignMap[i][j] = (i, j-1, s[i-1], '-')
 
-            newScore = transform('-', t[j-1], scoring) + m[i-1][j]
+            newScore = gap(t[j-1]) + m[i-1][j]
             if newScore > m[i][j]:
                 m[i][j] = newScore
                 alignMap[i][j] = (i-1, j, '-', t[j-1])
-    print('Score:',m[-1][-1])
-    return buildResult(alignMap)
+    return (m[-1][-1],buildResult(alignMap))
 
 
 def createAlignMap(s, t):
@@ -38,7 +54,17 @@ def createAlignMap(s, t):
                 alignMap[i][j] = (i-1, j, s[i-1], '-')
     return alignMap
 
+
+# resta 2 listas elemento a elemento, omitiendo los resultados negativos
+# pre: las listas tienen el mismo tamaño
+def mapSub(a, b):
+    res = []
+    for i in range(len(a)):
+        res.append(0 if a[i] == 0 else a[i]-b[i])
+    return res
+
 def buildResult(m):
+    path = []
     i = (-1, -1)
     res = ['']*2
     while i != (0, 0):
@@ -46,31 +72,26 @@ def buildResult(m):
         res[0] = aux[2]+res[0]
         res[1] = aux[3]+res[1]
         i = (aux[0], aux[1])
+        path.insert(0,i)
+    print('Path:',path)
     return res
 
-
-def transform(a, b, m):
-    if m is None:  # default
-        if a == b:
-            return 1
-        else:
-            return -1
-    else:
-        return m[a][b]
+def transform(a, b):
+    return scoring[char[a]][char[b]]
 
 
-def initialize(s, t, scoring):
+def initialize(s, t):
     iMax, jMax = len(s)+1, len(t)+1
-    return ([[initVal(i, j, s[i-1], t[j-1], scoring) for j in range(jMax)] for i in range(iMax)], iMax, jMax)
+    return ([[initVal(i, j, s[i-1], t[j-1]) for j in range(jMax)] for i in range(iMax)], iMax, jMax)
 
 
-def initVal(i, j, sChar, tChar, scoring):
+def initVal(i, j, sChar, tChar):
     if i == j == 0:
         return 0
     elif i == 0:
-        return j*transform('-', tChar, scoring)
+        return j*gap(tChar)
     elif j == 0:
-        return i*transform(sChar, '-', scoring)
+        return i*gap(sChar)
     else:
         return None
 
