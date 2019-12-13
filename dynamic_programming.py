@@ -68,7 +68,6 @@ def buildResult(alignMap, l):
 def calcChoiceCol(seqs, i, j):
     return [seqs[x][i[x]-1] if j[x] == 1 else '-' for x in range(len(i))]
 
-
 def initialize(seqs, m, n, l):
     alignMap = {}
     setM(m, [0]*n, 0)
@@ -85,8 +84,6 @@ def initialize(seqs, m, n, l):
     return alignMap
 
 
-def columnScore(col):
-    return sum([transform(col[a], col[b]) for a in range(len(col)) for b in range(a+1, len(col))])
 
 
 

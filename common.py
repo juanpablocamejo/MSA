@@ -5,6 +5,9 @@ from operator import mul, add
 char = { '-':0, 'A':1, 'C':2, 'G':3, 'T':4 }
 scoring = [[-1 if i!=j or 0 in(i,j) else 1 for i in range(5)] for j in range(5)] # matriz de scoring
 
+def columnScore(col):
+    return sum([transform(col[a], col[b]) for a in range(len(col)) for b in range(a+1, len(col))])
+
 def transform(a, b):
     return scoring[char[a] if isinstance(a,str) else a][char[b] if isinstance(b,str) else b]
 
