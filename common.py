@@ -2,14 +2,18 @@ from functools import reduce
 from operator import mul, add
 
 
-char = { '-':0, 'A':1, 'C':2, 'G':3, 'T':4 }
-scoring = [[-1 if i!=j or 0 in(i,j) else 1 for i in range(5)] for j in range(5)] # matriz de scoring
+char = {'-': 0, 'A': 1, 'C': 2, 'G': 3, 'T': 4}
+scoring = [[-1 if i != j or 0 in(i, j) else 1 for i in range(5)]
+           for j in range(5)]  # matriz de scoring
 
+# devuelve el score de una lista de caracteres
+# calculado como la sumatoria de los scores de todos los posibles pares
 def columnScore(col):
     return sum([transform(col[a], col[b]) for a in range(len(col)) for b in range(a+1, len(col))])
 
+
 def transform(a, b):
-    return scoring[char[a] if isinstance(a,str) else a][char[b] if isinstance(b,str) else b]
+    return scoring[char[a] if isinstance(a, str) else a][char[b] if isinstance(b, str) else b]
 
 
 def printMap(m):
@@ -22,7 +26,8 @@ def printM(m, lengths, skipEmpty=False):
     for i in mkAllIndex(lengths):
         v = getM(m, i)
         if not skipEmpty or v is not None:
-            print(reduce(lambda acc, c: acc + '[' + str(c) + ']', i, ''), '=', v)
+            print(reduce(lambda acc, c: acc +
+                         '[' + str(c) + ']', i, ''), '=', v)
 
 # devuelve todas las listas de naturales posibles
 # que tengan el mismo tamaño que 'lengths' y cuyos digitos
@@ -34,15 +39,20 @@ def mkAllIndex(lenghts):
     return res
 
 
-def nextIndex(prev, lenghts):
-    n = len(lenghts)
-    aux = prev.copy()
-    for j in range(n-1, -1, -1):
-        if aux[j] == lenghts[j]-1:
-            aux[j] = 0
-        else:
-            aux[j] += 1
+def nextIndex(prev, lenghts, predicate=None):
+    while True:
+        n = len(lenghts)
+        aux = prev.copy()
+        for j in range(n-1, -1, -1):
+            if aux[j] == lenghts[j]-1:
+                aux[j] = 0
+            else:
+                aux[j] += 1
+                break
+        if predicate is None or predicate(aux):
             break
+        else:
+            prev = aux
     return aux
 
 
@@ -80,10 +90,7 @@ def mapAdd(n, xs):
 def listToStr(idx):
     return ''.join(map(str, idx))
 
-# resta 2 listas elemento a elemento, omitiendo los resultados negativos
+# resta 2 listas elemento a elemento
 # pre: las listas tienen el mismo tamaño
 def mapSub(a, b):
-    res = []
-    for i in range(len(a)):
-        res.append(0 if a[i] == 0 else a[i]-b[i])
-    return res
+    return [a[i]-b[i] for i in range(len(a))]
