@@ -5,36 +5,36 @@ from profile import Profile
 from copy import deepcopy
 from common import *
 from needleman_wunsch import needleman_wunsch
-
+import logging
 
 def msa_grasp(seqs):
-    iterMax = len(seqs)*2
+    iterMax = 2*len(seqs)
     scores = []
-    print('GRASP iteration 0')
-    solution, score = grasp_iteration(seqs)
+    solution, score = grasp_iteration(seqs,0)
     scores.append(score)
-    print(' Score:',score)
     for _ in range(1, iterMax):
-        print('GRASP iteration ',_)
-        newSol, newScore = grasp_iteration(seqs)
+        newSol, newScore = grasp_iteration(seqs,_)
         if newScore > score:
             solution = newSol
             score = newScore
-        print(' Score:',score)
         scores.append(score)
-    log(reduce(lambda acc,x: acc + str(x) +'\t',scores,''))
+    print(reduce(lambda acc,x: acc + str(x) +'|',scores,''))
     return (solution, score)
 
 
-def grasp_iteration(seqs):
+def grasp_iteration(seqs,i):
+    log('GRASP Iteration:',i)
     # GREEDY RANDOM PONDERADO
-    print('  - greedy random')
+    log('  greedy random')
     profile, remSeqs = initial_random_greedy_alignment(seqs)
     # ALINEAMIENTOS PROFILE-SECUENCIA
-    print('  - profile to sequence')
+    log('  profile to sequence')
     profile = profile_sequence_alignments(profile, remSeqs)
     # BUSQUEDA LOCAL
     s = local_search(profile.seqs)
+    score = total_score(s)
+    log('  score:',score)
+
     return (s, total_score(s))
 
 
@@ -76,7 +76,7 @@ def local_search(solution):
             s_scores[a] = newScores[0]
             s_scores[b] = newScores[1]
             N = neighborhood(solution)
-    print('  - local search iterations:',cnt)
+    log('  local search iterations:',cnt)
     return solution
 
 # devuelve todas las soluciones vecinas con la forma (i,(a,b))
