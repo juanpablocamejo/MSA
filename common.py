@@ -2,7 +2,6 @@ from functools import reduce
 from operator import mul, add
 import logging
 
-
 char = {'-': 0, 'A': 1, 'C': 2, 'G': 3, 'T': 4}
 scoring = [[-1 if i != j or 0 in(i, j) else 1 for i in range(5)]
            for j in range(5)]  # matriz de scoring
@@ -20,24 +19,10 @@ def column_score(col):
 def transform(a, b):
     return scoring[char[a] if isinstance(a, str) else a][char[b] if isinstance(b, str) else b]
 
-
-def printMap(m):
-    for k in m.keys():
-        print(k, m[k])
-
-# imprime el contenido de una matriz n-dimensional
-# como una lista de indices seguidos de sus valores ej: [0][1]...[6] = None
-def printM(m, lengths, skipEmpty=False):
-    for i in mkAllIndex(lengths):
-        v = getM(m, i)
-        if not skipEmpty or v is not None:
-            print(reduce(lambda acc, c: acc +
-                         '[' + str(c) + ']', i, ''), '=', v)
-
 # devuelve todas las listas de naturales posibles
 # que tengan el mismo tamaño que 'lengths' y cuyos digitos
 # para cada posición 'i' esten en el intervalo [0, lengths[i])
-def mkAllIndex(lenghts):
+def mk_all_index(lenghts):
     res = [[0]*len(lenghts)]
     for _ in range(1, reduce(mul, lenghts, 1)):
         res.append(next_index(res[-1], lenghts))
@@ -55,46 +40,18 @@ def next_index(prev, lenghts):
             break
     return aux
 
-
 def all_bin_index(length, skip=0):
-    return mkAllIndex([2]*length)[skip:]
-
-# crea una matriz n-dimensional para almacenar las computaciones
-def emptyMatN(seqs, i=0):
-    dimLen = len(seqs[i])+1
-    if i == len(seqs)-1:
-        return [None]*(dimLen)
-    return [emptyMatN(seqs, i+1) for _ in range(dimLen)]
-
-# Obtiene un valor de la matriz n-dimensional 'm'
-# usando los valores de 'idx' como indices para cada dimensión
-def getM(m, idx):
-    d = m
-    for i in range(len(idx)):
-        d = d[idx[i]]
-    return d
-
-# Guarda un valor en la matriz n-dimensional 'm'
-# en la posición determinada por los indices de 'idx'
-def setM(m, idx, val):
-    res = m
-    for i in range(len(idx)-1):
-        res = res[idx[i]]
-    res[idx[-1]] = val
+    return mk_all_index([2]*length)[skip:]
 
 # suma n a cada elemento de la lista xs
 def map_add(n, xs):
     return list(map(lambda x: x+n, xs))
 
-# convierte una lista en un string de todos los elementos concatenados
-def listToStr(idx):
-    return ''.join(map(str, idx))
-
 # resta 2 listas elemento a elemento
 # pre: las listas tienen el mismo tamaño
-def mapSub(a, b):
+def map_sub(a, b):
     return [a[i]-b[i] for i in range(len(a))]
 
 
-def replaceChar(seq, i, r):
+def replace_char(seq, i, r):
     return seq[:i] + r + seq[i + 1:]

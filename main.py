@@ -13,7 +13,7 @@ seqs =['GCGGGTCACTGAGGGCTGGGATGAGGACGGCCACCACTTCGAGGAGTCCCTTCACTACGAGGGCAGGGCCGT
         'TGCTGCTGCTGGCGAGATGTCTGCTGGTGCTGCTTGTCTCCTCGCTGTTGATGTGCTCGGGGCTGGCGTGCGGACCCGGCAGGGGATTTGGCAAGAGGCGGAACCCCAAAAAGCTGACCCCTTTAGCCTACAAGCAGTTTATCCCCAACGTGGCGGAGAAGACCCTAGGGGCCAGTGGAAGATATGAGGGGAAGATCACCAGAAACTCAGAGCGATTTAAGGAACTCACCCCCAATTACAACCC']
 
 
-def generateInstance(seqs, cnt, lenght):
+def generate_instance(seqs, cnt, lenght):
     res = []
     for n in range(cnt):
         src = seqs[n%len(seqs)]
@@ -22,7 +22,7 @@ def generateInstance(seqs, cnt, lenght):
         fin = ini+lenght
         res.append(src[ini:fin])
     return res      
-instances = [generateInstance(seqs,4,60) for _ in range(10)]
+instances = [generate_instance(seqs,4,60) for _ in range(10)]
 
 
 def main():

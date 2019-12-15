@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Visual Studio proj. files
+.pyproj
+.pyproj.user
+.vs/
+TestResults/*.*

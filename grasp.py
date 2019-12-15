@@ -43,7 +43,7 @@ def grasp_iteration(seqs,i):
 # devuelve la tupla (profile, secuenciasRestantes)
 def initial_random_greedy_alignment(seqs):
     remSeqs = seqs.copy()  # secuencias sin alinear
-    i, j, res = weighted_random_choice(alignAllPairs(seqs))
+    i, j, res = weighted_random_choice(align_all_pairs(seqs))
     alignment,score = res
     profile = Profile(*alignment, score)
     for idx, x in enumerate([i, j]):
@@ -70,7 +70,7 @@ def local_search(solution):
         i, swapIdx = N.pop()
         a, b = swapIdx
         neighbor_sol = neighbor_solution(solution, i, a, b)
-        newScores = [columnScoreAt(neighbor_sol, i) for i in (a, b)]
+        newScores = [column_score_at(neighbor_sol, i) for i in (a, b)]
         if s_scores[a]+s_scores[b] < sum(newScores):
             solution = neighbor_sol
             s_scores[a] = newScores[0]
@@ -91,8 +91,8 @@ def neighborhood(seqs):
 def neighbor_solution(seqs, i, a, b):
     res = seqs.copy()
     tmp = res[i][a]
-    res[i] = replaceChar(res[i], a, res[i][b])
-    res[i] = replaceChar(res[i], b, tmp)
+    res[i] = replace_char(res[i], a, res[i][b])
+    res[i] = replace_char(res[i], b, tmp)
     return res
 
 # devuelve todos los pares de indices consecutivos de una secuencia
@@ -116,16 +116,16 @@ def total_score(seqs):
     return sum(solution_scores(seqs))
 
 # obtiene el score de la columna 'i' en la lista de secuencias alineadas
-def columnScoreAt(seqs, i):
+def column_score_at(seqs, i):
     return column_score([x[i] for x in seqs])
 
 #alinea todos los posibles pares de seqs
 #aplicando needleman-wunsch y los devuelve ordenados por mayor score
 #el resultado es la tupla (i,j,alignment,score) donde i y j son 
 #los indices de las secuencias en la lista original
-def alignAllPairs(seqs):
+def align_all_pairs(seqs):
     res = []
-    for i, j, s, t in allPairs(seqs):
+    for i, j, s, t in all_pairs(seqs):
         res.append((i, j, needleman_wunsch(s, t)))
     return sorted(res, key=lambda t: t[2][0], reverse=True)
 
@@ -137,7 +137,7 @@ def weighted_random_choice(rank):
 #devuelve todos los pares posibles de secuencias
 #el resultado es una lista de tuplas (i,j,s,t)
 #donde i y j son los indices, y  s y t las secuencias
-def allPairs(seqs):
+def all_pairs(seqs):
     return [(a, b, seqs[a], seqs[b]) for a in range(len(seqs)) for b in range(a+1, len(seqs))]
 
 
@@ -146,19 +146,19 @@ def allPairs(seqs):
 #devuelve una instancia de Profile
 def prof_seq_align(p, s):
     p.initializeAlignMap(s)
-    m, lenI, lenJ = initializePSA(p, s)
+    m, lenI, lenJ = initialize_psa(p, s)
     for i in range(1, lenI):
         for j in range(1, lenJ):
             # match/missmatch
-            m[i][j] = calcScore(s[i-1], p.getColumnProbs(j-1)) + m[i-1][j-1]
+            m[i][j] = calc_score(s[i-1], p.getColumnProbs(j-1)) + m[i-1][j-1]
             p.alignMap[i][j] = ((i-1, j-1), p.getColumnChars(j-1) + [s[i-1]])
             # gap en el profile
-            newScore = calcScore(s[i-1], [1]) + m[i-1][j]
+            newScore = calc_score(s[i-1], [1]) + m[i-1][j]
             if newScore > m[i][j]:
                 m[i][j] = newScore
                 p.alignMap[i][j] = ((i-1, j), ['-']*len(p.seqs) + [s[i-1]])
             # gap en la secuencia
-            newScore = calcScore('-', p.getColumnProbs(j-1)) + m[i][j-1]
+            newScore = calc_score('-', p.getColumnProbs(j-1)) + m[i][j-1]
             if newScore > m[i][j]:
                 m[i][j] = newScore
                 p.alignMap[i][j] = ((i, j-1), p.getColumnChars(j-1) + ['-'])
@@ -168,19 +168,19 @@ def prof_seq_align(p, s):
 
 #calcula el score para un paso del alineamiento profile-secuencia
 #ch es el caracter de la secuencia y pCol la columna de la matriz del profile
-def calcScore(ch, pCol):
+def calc_score(ch, pCol):
     return sum([p*transform(char[ch], i) for i, p in enumerate(pCol) if p > 0])
 
 #inicializa la matriz y carga los casos base, para la alineación profile-secuencia
-def initializePSA(p, s):
+def initialize_psa(p, s):
     lenI, lenJ = len(s)+1, p.len()+1
-    return ([[initValPSA(i, j, s[i-1], p.getColumnProbs(j-1)) for j in range(lenJ)] for i in range(lenI)], lenI, lenJ)
+    return ([[init_val_psa(i, j, s[i-1], p.getColumnProbs(j-1)) for j in range(lenJ)] for i in range(lenI)], lenI, lenJ)
 
-def initValPSA(i, j, sChar, pCol):
+def init_val_psa(i, j, sChar, pCol):
     if i == j == 0:
         return 0
     elif i == 0:
-        return j*calcScore('-', pCol)
+        return j*calc_score('-', pCol)
     elif j == 0:
         return i*transform(sChar, '-')
     else:

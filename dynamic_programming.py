@@ -15,7 +15,7 @@ def msa_dp(seqs):
         if m[i] is None:
             bestScore = prevIdx = col = None
             for j in all_prev_index(i):
-                currPrevIdx = mapSub(i, j)
+                currPrevIdx = map_sub(i, j)
                 currCol = calc_choice_column(seqs, i, j)
                 currScore = column_score(currCol) + m[currPrevIdx]
                 if bestScore is None or bestScore < currScore:
