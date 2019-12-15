@@ -1,14 +1,19 @@
 from functools import reduce
 from operator import mul, add
+import logging
 
 
 char = {'-': 0, 'A': 1, 'C': 2, 'G': 3, 'T': 4}
 scoring = [[-1 if i != j or 0 in(i, j) else 1 for i in range(5)]
            for j in range(5)]  # matriz de scoring
 
+def log(*args):
+    logging.info(reduce(lambda acc,x:acc+str(x),args,''))
+
+
 # devuelve el score de una lista de caracteres
 # calculado como la sumatoria de los scores de todos los posibles pares
-def columnScore(col):
+def column_score(col):
     return sum([transform(col[a], col[b]) for a in range(len(col)) for b in range(a+1, len(col))])
 
 
@@ -35,28 +40,23 @@ def printM(m, lengths, skipEmpty=False):
 def mkAllIndex(lenghts):
     res = [[0]*len(lenghts)]
     for _ in range(1, reduce(mul, lenghts, 1)):
-        res.append(nextIndex(res[-1], lenghts))
+        res.append(next_index(res[-1], lenghts))
     return res
 
 
-def nextIndex(prev, lenghts, predicate=None):
-    while True:
-        n = len(lenghts)
-        aux = prev.copy()
-        for j in range(n-1, -1, -1):
-            if aux[j] == lenghts[j]-1:
-                aux[j] = 0
-            else:
-                aux[j] += 1
-                break
-        if predicate is None or predicate(aux):
-            break
+def next_index(prev, lenghts):
+    n = len(lenghts)
+    aux = prev.copy()
+    for j in range(n-1, -1, -1):
+        if aux[j] == lenghts[j]-1:
+            aux[j] = 0
         else:
-            prev = aux
+            aux[j] += 1
+            break
     return aux
 
 
-def mkAllBinIndex(length, skip=0):
+def all_bin_index(length, skip=0):
     return mkAllIndex([2]*length)[skip:]
 
 # crea una matriz n-dimensional para almacenar las computaciones
@@ -83,7 +83,7 @@ def setM(m, idx, val):
     res[idx[-1]] = val
 
 # suma n a cada elemento de la lista xs
-def mapAdd(n, xs):
+def map_add(n, xs):
     return list(map(lambda x: x+n, xs))
 
 # convierte una lista en un string de todos los elementos concatenados
@@ -94,3 +94,7 @@ def listToStr(idx):
 # pre: las listas tienen el mismo tamaño
 def mapSub(a, b):
     return [a[i]-b[i] for i in range(len(a))]
+
+
+def replaceChar(seq, i, r):
+    return seq[:i] + r + seq[i + 1:]

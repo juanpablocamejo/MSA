@@ -17,9 +17,10 @@ class Profile:
     def len(self):
         return len(self.matrix)
 
-    def getColumn(self, i):
+    def getColumnProbs(self, i):
         return [c/self.total for c in self.matrix[i]]
 
+    # inicializa la matriz que almacenará el camino del alineamiento
     def initializeAlignMap(self, newSeq):
         iMax, jMax = len(newSeq)+1, self.len()+1
         self.alignMap = [[None]*jMax for i in range(iMax)]
@@ -27,9 +28,9 @@ class Profile:
             self.alignMap[i][0] = (
                 (i-1, 0), ['-']*(len(self.seqs)) + [newSeq[i-1]])
         for j in range(1, jMax):
-            self.alignMap[0][j] = ((0, j-1), self.getSeqsColumn(j-1) + ['-'])
+            self.alignMap[0][j] = ((0, j-1), self.getColumnChars(j-1) + ['-'])
 
-    def getSeqsColumn(self, i):
+    def getColumnChars(self, i):
         return list(map(lambda x: x[i], self.seqs))
 
     def buildResult(self):
