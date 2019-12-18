@@ -133,3 +133,4 @@ dmypy.json
 .pyproj.user
 .vs/
 TestResults/*.*
+.idea/
